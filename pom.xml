@@ -177,50 +177,6 @@
         <plugin>
           <artifactId>maven-javadoc-plugin</artifactId>
           <version>${mavenJavadocPluginVersion}</version>
-          <configuration>
-            <tags>
-              <tag>
-                <name>description</name>
-                <placement>t</placement>
-                <head>Plugin Description:</head>
-              </tag>
-              <tag>
-                <name>goal</name>
-                <placement>t</placement>
-                <head>Goal:</head>
-              </tag>
-              <tag>
-                <name>parameter</name>
-                <placement>fm</placement>
-                <head>Plugin Parameter</head>
-              </tag>
-              <tag>
-                <name>phase</name>
-                <placement>t</placement>
-                <head>Runs by Default in Maven Lifecycle Phase:</head>
-              </tag>
-              <tag>
-                <name>readonly</name>
-                <placement>fm</placement>
-                <head>Read-Only Plugin Parameter</head>
-              </tag>
-              <tag>
-                <name>required</name>
-                <placement>fm</placement>
-                <head>Required Plugin Parameter</head>
-              </tag>
-              <tag>
-                <name>requiresDependencyResolution</name>
-                <placement>t</placement>
-                <head>Requires Dependency Resolution in Scope:</head>
-              </tag>
-            </tags>
-          </configuration>
-        </plugin>
-
-        <plugin>
-          <artifactId>maven-plugin-plugin</artifactId>
-          <version>${mavenPluginPluginVersion}</version>
         </plugin>
 
         <plugin>
@@ -312,8 +268,6 @@
     <mavenInstallPluginVersion>2.4</mavenInstallPluginVersion>
     <mavenJarPluginVersion>2.4</mavenJarPluginVersion>
     <mavenJavadocPluginVersion>2.9</mavenJavadocPluginVersion>
-    <mavenPluginPluginVersion>3.2</mavenPluginPluginVersion>
-    <mavenPluginTestingHarnessVersion>2.1</mavenPluginTestingHarnessVersion>
     <mavenProjectInfoReportsPlugin>2.6</mavenProjectInfoReportsPlugin>
     <mavenReleasePluginVersion>2.4.1</mavenReleasePluginVersion>    
     <mavenResourcesPluginVersion>2.6</mavenResourcesPluginVersion>

@@ -29,6 +29,10 @@ package com.edugility.jaxb;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
+/**
+ * An {@link XmlAdapter} that performs no transformations on its
+ * inputs during marshalling or unmarshalling.
+ */
 public final class AnyTypeAdapter extends XmlAdapter<Object, Object> {
 
   public AnyTypeAdapter() {
