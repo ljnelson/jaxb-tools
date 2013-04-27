@@ -16,10 +16,15 @@ Architecture for XML Binding APIs.
 
    This class helps install a `XmlJavaTypeAdapters` annotation on an
    existing `package-info.class` file.
-   
+ 
+ * `UniversalXmlAdapter`
+ 
+   A JAXB `XmlAdapter` that helps JAXB substitute an implementation
+   class for an interface.
+ 
  * `XmlAdapterBytecodeGenerator`
  
-   A 
+   A generator of `UniversalXmlAdapter` subclass bytecode.
 
 [1]: http://about.me/lairdnelson
 [2]: http://jaxb.java.net/

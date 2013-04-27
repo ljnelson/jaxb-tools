@@ -42,8 +42,22 @@ import javassist.bytecode.BadBytecode;
 import javassist.bytecode.ClassFile;
 import javassist.bytecode.SignatureAttribute;
 
+/**
+ * A generator of bytecode for {@link UniversalXmlAdapter} subclasses.
+ *
+ * @author <a href="http://about.me/lairdnelson">Laird Nelson</a>
+ *
+ * @see #generate(String, String, String)
+ *
+ * @see UniversalXmlAdapter
+ */
 public class XmlAdapterBytecodeGenerator {
 
+  /**
+   * An empty {@code byte} array suitable for edge cases encountered
+   * by the {@link #generate(String, String, String)} method.  This
+   * field is never {@code null}.
+   */
   private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
   /**
