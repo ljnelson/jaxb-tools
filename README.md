@@ -16,6 +16,10 @@ Architecture for XML Binding APIs.
 
    This class helps install a `XmlJavaTypeAdapters` annotation on an
    existing `package-info.class` file.
+   
+ * `XmlAdapterBytecodeGenerator`
+ 
+   A 
 
 [1]: http://about.me/lairdnelson
 [2]: http://jaxb.java.net/
