@@ -322,7 +322,7 @@
     <mavenSurefirePluginVersion>2.14.1</mavenSurefirePluginVersion>
     <mavenVersion>3.0.4</mavenVersion>
     <scannotationVersion>1.0.2</scannotationVersion>
-    <siteMavenPluginVersion>0.7</siteMavenPluginVersion>
+    <siteMavenPluginVersion>0.8</siteMavenPluginVersion>
     <versionsMavenPluginVersion>2.0</versionsMavenPluginVersion>
 
     <!-- maven-compiler-plugin properties -->
