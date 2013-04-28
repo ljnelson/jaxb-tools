@@ -45,6 +45,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javassist.bytecode.annotation.Annotation;
+
 import javassist.bytecode.ClassFile;
 
 import org.scannotation.AnnotationDB;
@@ -53,6 +54,8 @@ import org.scannotation.AnnotationDB;
  * A class that efficiently scans class bytecode looking for classes
  * annotated with JAXB annotations that optionally implement a given
  * interface.
+ *
+ * @see #scan()
  *
  * @see XmlAdapterBytecodeGenerator
  *
@@ -86,74 +89,72 @@ public class JAXBElementScanner implements Serializable {
    *
    * <p>The default implementation of this method does no classloading
    * but scans the bytecode directly.</p>
+   *
+   * @return a non-{@code null} {@link Map} of names of JAXB-annotated
+   * classes indexed by the names of interfaces they implement
+   *
+   * @exception IOException if an error occurs during the processing
+   * of class files
    */
   public Map<String, String> scan() throws IOException {
     final SortedMap<String, String> bindings = new TreeMap<String, String>();
-
     final Set<URI> uris = this.getURIs();
-    if (uris == null || uris.isEmpty()) {
-      // Nothing to do!
-      return bindings;
-    }
+    if (uris != null && !uris.isEmpty()) {
 
-    final AnnotationDB db = new ClassFileTrackingAnnotationDB() {
-        
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        protected final void populate(final Annotation[] annotations, final ClassFile cf) {
-          if (annotations != null && annotations.length > 0 && cf != null && !cf.isInterface()) {
-            final BindingFilter bindingFilter = getBindingFilter();            
-            for (final Annotation a : annotations) {
-              if (a != null) {
-                final String typeName = a.getTypeName();
-                assert typeName != null;
-                if (typeName.startsWith("javax.xml.bind.annotation.")) {
-                  // OK, we have a class with JAXB annotations on it.
-                  // Get its interfaces efficiently.
-                  boolean atLeastOneInterfaceProcessed = false;
-                  final String[] interfaces = cf.getInterfaces();
-                  if (interfaces != null && interfaces.length > 0) {
-                    for (final String interfaceName : interfaces) {
-                      assert interfaceName != null;
-                      final String implementationClassName = cf.getName();
-                      if (bindingFilter == null || bindingFilter.accept(interfaceName, implementationClassName)) {
-                        atLeastOneInterfaceProcessed = true;
-                        if (bindings.containsKey(interfaceName)) {
-                          // TODO: warn
+      final AnnotationDB db = new ClassFileTrackingAnnotationDB(this.getIgnoredPackages()) {        
+          private static final long serialVersionUID = 1L;
+          @Override
+          protected final void populate(final Annotation[] annotations, final ClassFile cf) {
+            if (annotations != null && annotations.length > 0 && cf != null && !cf.isInterface()) {
+              final BindingFilter bindingFilter = getBindingFilter();            
+              for (final Annotation a : annotations) {
+                if (a != null) {
+                  final String typeName = a.getTypeName();
+                  assert typeName != null;
+                  if (typeName.startsWith("javax.xml.bind.annotation.")) {
+                    // OK, we have a class with JAXB annotations on it.
+                    // Get its interfaces efficiently.
+                    boolean atLeastOneInterfaceProcessed = false;
+                    final String[] interfaces = cf.getInterfaces();
+                    if (interfaces != null && interfaces.length > 0) {
+                      for (final String interfaceName : interfaces) {
+                        assert interfaceName != null;
+                        final String implementationClassName = cf.getName();
+                        if (bindingFilter == null || bindingFilter.accept(interfaceName, implementationClassName)) {
+                          atLeastOneInterfaceProcessed = true;
+                          if (bindings.containsKey(interfaceName)) {
+                            // TODO: warn
+                          }
+                          bindings.put(interfaceName, implementationClassName);
                         }
-                        bindings.put(interfaceName, implementationClassName);
                       }
                     }
-                  }
-                  if (atLeastOneInterfaceProcessed) {
-                    break; // out of the annotation processing loop
+                    if (atLeastOneInterfaceProcessed) {
+                      break; // out of the annotation processing loop
+                    }
                   }
                 }
               }
             }
           }
+        };
+
+      final URL[] urls = new URL[uris.size()];
+      int i = 0;
+      for (final URI uri : uris) {
+        urls[i++] = uri == null ? null : uri.toURL();
+      }
+
+      try {
+        // Scans the URLs and places the results in the bindings map
+        db.scanArchives(urls);
+      } catch (final IllegalStateException unwrapMe) {
+        final Throwable cause = unwrapMe.getCause();
+        if (cause instanceof IOException) {
+          throw (IOException)cause;
+        } else {
+          throw unwrapMe;
         }
-      };
-    final Set<String> ignoredPackages = this.getIgnoredPackages();
-    if (ignoredPackages != null) {
-      db.setIgnoredPackages(ignoredPackages.toArray(new String[ignoredPackages.size()]));
-    }
-
-    final URL[] urls = new URL[uris.size()];
-    int i = 0;
-    for (final URI uri : uris) {
-      urls[i++] = uri == null ? null : uri.toURL();
-    }
-
-    try {
-      db.scanArchives(urls);
-    } catch (final IllegalStateException unwrapMe) {
-      final Throwable cause = unwrapMe.getCause();
-      if (cause instanceof IOException) {
-        throw (IOException)cause;
-      } else {
-        throw unwrapMe;
       }
     }
     return bindings;
@@ -289,9 +290,12 @@ public class JAXBElementScanner implements Serializable {
         
     private ClassFile cf;
     
-    private ClassFileTrackingAnnotationDB() {
-      super();
+    private ClassFileTrackingAnnotationDB(Set<String> ignoredPackages) {
+      super();      
       this.setScanParameterAnnotations(false);
+      if (ignoredPackages != null && !ignoredPackages.isEmpty()) {
+        this.setIgnoredPackages(ignoredPackages.toArray(new String[ignoredPackages.size()]));
+      }
     }
 
     /**
