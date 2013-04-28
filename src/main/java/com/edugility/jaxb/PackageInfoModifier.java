@@ -443,49 +443,27 @@ public class PackageInfoModifier {
    */
   private static final Map<String, Annotation> getExistingXmlJavaTypeAdapters(final ArrayMemberValue adaptersHolder) {
     // Build a Map indexing existing @XmlJavaTypeAdapter annotations
-    // by the types that they govern.  First create an array of the
-    // existing @XmlJavaTypeAdapter annotations.  This is more
-    // difficult than it should be; hence the copious boilerplate
-    // below.
-    
-    final List<AnnotationMemberValue> existingAdapterHolders;
-    if (adaptersHolder == null) {
-      existingAdapterHolders = null;
-    } else {
+    // by the types that they govern.
+    final Map<String, Annotation> xmlJavaTypeAdapters = new HashMap<String, Annotation>();
+    if (adaptersHolder != null) {
       final MemberValue[] rawMemberValue = adaptersHolder.getValue();
-      if (rawMemberValue == null || rawMemberValue.length <= 0) {
-        existingAdapterHolders = null;
-      } else {
-        existingAdapterHolders = new ArrayList<AnnotationMemberValue>();
+      if (rawMemberValue != null && rawMemberValue.length > 0) {
         for (final MemberValue mv : rawMemberValue) {
           if (mv instanceof AnnotationMemberValue) {
-            existingAdapterHolders.add((AnnotationMemberValue)mv);
-          }
-        }
-      }
-    }
-      
-    // Loop through the existing @XmlJavaTypeAdapter annotations and
-    // store them in a map indexed by the names of the types they
-    // govern.
-    final Map<String, Annotation> xmlJavaTypeAdapters = new HashMap<String, Annotation>();
-    if (existingAdapterHolders != null && !existingAdapterHolders.isEmpty()) {
-      for (final AnnotationMemberValue existingAdapterHolder : existingAdapterHolders) {
-        if (existingAdapterHolder != null) {
-          final Annotation xmlJavaTypeAdapter = existingAdapterHolder.getValue();
-          if (xmlJavaTypeAdapter != null && XmlJavaTypeAdapter.class.getName().equals(xmlJavaTypeAdapter.getTypeName())) {
-            final ClassMemberValue typeHolder = (ClassMemberValue)xmlJavaTypeAdapter.getMemberValue("type");
-            if (typeHolder != null) {
-              final String interfaceTypeName = typeHolder.getValue();
-              if (interfaceTypeName != null) {
-                xmlJavaTypeAdapters.put(interfaceTypeName, xmlJavaTypeAdapter);
+            final Annotation xmlJavaTypeAdapter = ((AnnotationMemberValue)mv).getValue();
+            if (xmlJavaTypeAdapter != null && XmlJavaTypeAdapter.class.getName().equals(xmlJavaTypeAdapter.getTypeName())) {
+              final ClassMemberValue typeHolder = (ClassMemberValue)xmlJavaTypeAdapter.getMemberValue("type");
+              if (typeHolder != null) {
+                final String interfaceTypeName = typeHolder.getValue();
+                if (interfaceTypeName != null) {
+                  xmlJavaTypeAdapters.put(interfaceTypeName, xmlJavaTypeAdapter);
+                }
               }
             }
           }
         }
       }
     }
-    
     return xmlJavaTypeAdapters;
   }
 

@@ -2,7 +2,7 @@
  *
  * $Id$
  *
- * Copyright (c) 2010-2011 Edugility LLC.
+ * Copyright (c) 2013 Edugility LLC.
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -33,10 +33,10 @@ import java.io.IOException;
 
 import java.util.Formatter; // for javadoc only
 
+import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
-import javassist.CannotCompileException;
 
 import javassist.bytecode.BadBytecode;
 import javassist.bytecode.ClassFile;

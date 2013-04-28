@@ -343,9 +343,9 @@
     <maven.compiler.verbose>false</maven.compiler.verbose>
 
     <!-- maven-javadoc-plugin properties -->
+    <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}&ndash;{currentYear}, <a href="http://about.me/lairdnelson" target="_parent">Laird Nelson</a>. All rights reserved.]]></bottom>
     <detectLinks>false</detectLinks>
     <links>http://download.oracle.com/javaee/6/api/,http://scannotation.sourceforge.net/apidocs/,http://www.csg.is.titech.ac.jp/~chiba/javassist/html/</links>
-    <show>private</show>
     <sourcetab>2</sourcetab>
     <stylesheetfile>styles.css</stylesheetfile>
 
