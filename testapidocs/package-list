@@ -1,0 +1,5 @@
+com.edugility.jaxb
+com.edugility.jaxb.emptyxmljavatypeadaptersannotation
+com.edugility.jaxb.noxmljavatypeadaptersannotation
+com.edugility.jaxb.unmodifiedxmljavatypeadaptersannotation.novalue
+com.edugility.jaxb.unmodifiedxmljavatypeadaptersannotation.withvalue
