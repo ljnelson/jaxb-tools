@@ -446,111 +446,89 @@
 <FONT color="green">443</FONT>       */<a name="line.443"></a>
 <FONT color="green">444</FONT>      private static final Map&lt;String, Annotation&gt; getExistingXmlJavaTypeAdapters(final ArrayMemberValue adaptersHolder) {<a name="line.444"></a>
 <FONT color="green">445</FONT>        // Build a Map indexing existing @XmlJavaTypeAdapter annotations<a name="line.445"></a>
-<FONT color="green">446</FONT>        // by the types that they govern.  First create an array of the<a name="line.446"></a>
-<FONT color="green">447</FONT>        // existing @XmlJavaTypeAdapter annotations.  This is more<a name="line.447"></a>
-<FONT color="green">448</FONT>        // difficult than it should be; hence the copious boilerplate<a name="line.448"></a>
-<FONT color="green">449</FONT>        // below.<a name="line.449"></a>
-<FONT color="green">450</FONT>        <a name="line.450"></a>
-<FONT color="green">451</FONT>        final List&lt;AnnotationMemberValue&gt; existingAdapterHolders;<a name="line.451"></a>
-<FONT color="green">452</FONT>        if (adaptersHolder == null) {<a name="line.452"></a>
-<FONT color="green">453</FONT>          existingAdapterHolders = null;<a name="line.453"></a>
-<FONT color="green">454</FONT>        } else {<a name="line.454"></a>
-<FONT color="green">455</FONT>          final MemberValue[] rawMemberValue = adaptersHolder.getValue();<a name="line.455"></a>
-<FONT color="green">456</FONT>          if (rawMemberValue == null || rawMemberValue.length &lt;= 0) {<a name="line.456"></a>
-<FONT color="green">457</FONT>            existingAdapterHolders = null;<a name="line.457"></a>
-<FONT color="green">458</FONT>          } else {<a name="line.458"></a>
-<FONT color="green">459</FONT>            existingAdapterHolders = new ArrayList&lt;AnnotationMemberValue&gt;();<a name="line.459"></a>
-<FONT color="green">460</FONT>            for (final MemberValue mv : rawMemberValue) {<a name="line.460"></a>
-<FONT color="green">461</FONT>              if (mv instanceof AnnotationMemberValue) {<a name="line.461"></a>
-<FONT color="green">462</FONT>                existingAdapterHolders.add((AnnotationMemberValue)mv);<a name="line.462"></a>
+<FONT color="green">446</FONT>        // by the types that they govern.<a name="line.446"></a>
+<FONT color="green">447</FONT>        final Map&lt;String, Annotation&gt; xmlJavaTypeAdapters = new HashMap&lt;String, Annotation&gt;();<a name="line.447"></a>
+<FONT color="green">448</FONT>        if (adaptersHolder != null) {<a name="line.448"></a>
+<FONT color="green">449</FONT>          final MemberValue[] rawMemberValue = adaptersHolder.getValue();<a name="line.449"></a>
+<FONT color="green">450</FONT>          if (rawMemberValue != null &amp;&amp; rawMemberValue.length &gt; 0) {<a name="line.450"></a>
+<FONT color="green">451</FONT>            for (final MemberValue mv : rawMemberValue) {<a name="line.451"></a>
+<FONT color="green">452</FONT>              if (mv instanceof AnnotationMemberValue) {<a name="line.452"></a>
+<FONT color="green">453</FONT>                final Annotation xmlJavaTypeAdapter = ((AnnotationMemberValue)mv).getValue();<a name="line.453"></a>
+<FONT color="green">454</FONT>                if (xmlJavaTypeAdapter != null &amp;&amp; XmlJavaTypeAdapter.class.getName().equals(xmlJavaTypeAdapter.getTypeName())) {<a name="line.454"></a>
+<FONT color="green">455</FONT>                  final ClassMemberValue typeHolder = (ClassMemberValue)xmlJavaTypeAdapter.getMemberValue("type");<a name="line.455"></a>
+<FONT color="green">456</FONT>                  if (typeHolder != null) {<a name="line.456"></a>
+<FONT color="green">457</FONT>                    final String interfaceTypeName = typeHolder.getValue();<a name="line.457"></a>
+<FONT color="green">458</FONT>                    if (interfaceTypeName != null) {<a name="line.458"></a>
+<FONT color="green">459</FONT>                      xmlJavaTypeAdapters.put(interfaceTypeName, xmlJavaTypeAdapter);<a name="line.459"></a>
+<FONT color="green">460</FONT>                    }<a name="line.460"></a>
+<FONT color="green">461</FONT>                  }<a name="line.461"></a>
+<FONT color="green">462</FONT>                }<a name="line.462"></a>
 <FONT color="green">463</FONT>              }<a name="line.463"></a>
 <FONT color="green">464</FONT>            }<a name="line.464"></a>
 <FONT color="green">465</FONT>          }<a name="line.465"></a>
 <FONT color="green">466</FONT>        }<a name="line.466"></a>
-<FONT color="green">467</FONT>          <a name="line.467"></a>
-<FONT color="green">468</FONT>        // Loop through the existing @XmlJavaTypeAdapter annotations and<a name="line.468"></a>
-<FONT color="green">469</FONT>        // store them in a map indexed by the names of the types they<a name="line.469"></a>
-<FONT color="green">470</FONT>        // govern.<a name="line.470"></a>
-<FONT color="green">471</FONT>        final Map&lt;String, Annotation&gt; xmlJavaTypeAdapters = new HashMap&lt;String, Annotation&gt;();<a name="line.471"></a>
-<FONT color="green">472</FONT>        if (existingAdapterHolders != null &amp;&amp; !existingAdapterHolders.isEmpty()) {<a name="line.472"></a>
-<FONT color="green">473</FONT>          for (final AnnotationMemberValue existingAdapterHolder : existingAdapterHolders) {<a name="line.473"></a>
-<FONT color="green">474</FONT>            if (existingAdapterHolder != null) {<a name="line.474"></a>
-<FONT color="green">475</FONT>              final Annotation xmlJavaTypeAdapter = existingAdapterHolder.getValue();<a name="line.475"></a>
-<FONT color="green">476</FONT>              if (xmlJavaTypeAdapter != null &amp;&amp; XmlJavaTypeAdapter.class.getName().equals(xmlJavaTypeAdapter.getTypeName())) {<a name="line.476"></a>
-<FONT color="green">477</FONT>                final ClassMemberValue typeHolder = (ClassMemberValue)xmlJavaTypeAdapter.getMemberValue("type");<a name="line.477"></a>
-<FONT color="green">478</FONT>                if (typeHolder != null) {<a name="line.478"></a>
-<FONT color="green">479</FONT>                  final String interfaceTypeName = typeHolder.getValue();<a name="line.479"></a>
-<FONT color="green">480</FONT>                  if (interfaceTypeName != null) {<a name="line.480"></a>
-<FONT color="green">481</FONT>                    xmlJavaTypeAdapters.put(interfaceTypeName, xmlJavaTypeAdapter);<a name="line.481"></a>
-<FONT color="green">482</FONT>                  }<a name="line.482"></a>
-<FONT color="green">483</FONT>                }<a name="line.483"></a>
-<FONT color="green">484</FONT>              }<a name="line.484"></a>
-<FONT color="green">485</FONT>            }<a name="line.485"></a>
-<FONT color="green">486</FONT>          }<a name="line.486"></a>
-<FONT color="green">487</FONT>        }<a name="line.487"></a>
-<FONT color="green">488</FONT>        <a name="line.488"></a>
-<FONT color="green">489</FONT>        return xmlJavaTypeAdapters;<a name="line.489"></a>
-<FONT color="green">490</FONT>      }<a name="line.490"></a>
+<FONT color="green">467</FONT>        return xmlJavaTypeAdapters;<a name="line.467"></a>
+<FONT color="green">468</FONT>      }<a name="line.468"></a>
+<FONT color="green">469</FONT>    <a name="line.469"></a>
+<FONT color="green">470</FONT>      public Map&lt;String, String&gt; getBindings() {<a name="line.470"></a>
+<FONT color="green">471</FONT>        return this.bindings;<a name="line.471"></a>
+<FONT color="green">472</FONT>      }<a name="line.472"></a>
+<FONT color="green">473</FONT>    <a name="line.473"></a>
+<FONT color="green">474</FONT>      public void setBindings(final Map&lt;String, String&gt; bindings) {<a name="line.474"></a>
+<FONT color="green">475</FONT>        this.bindings = bindings;<a name="line.475"></a>
+<FONT color="green">476</FONT>      }<a name="line.476"></a>
+<FONT color="green">477</FONT>    <a name="line.477"></a>
+<FONT color="green">478</FONT>      public static final class Modification implements Serializable {<a name="line.478"></a>
+<FONT color="green">479</FONT>    <a name="line.479"></a>
+<FONT color="green">480</FONT>        private static final long serialVersionUID = 1L;<a name="line.480"></a>
+<FONT color="green">481</FONT>    <a name="line.481"></a>
+<FONT color="green">482</FONT>        public static enum Kind {<a name="line.482"></a>
+<FONT color="green">483</FONT>          UNMODIFIED, GENERATED, MODIFIED;<a name="line.483"></a>
+<FONT color="green">484</FONT>        }<a name="line.484"></a>
+<FONT color="green">485</FONT>    <a name="line.485"></a>
+<FONT color="green">486</FONT>        private final CtClass packageInfoCtClass;<a name="line.486"></a>
+<FONT color="green">487</FONT>    <a name="line.487"></a>
+<FONT color="green">488</FONT>        private final byte[] bytes;<a name="line.488"></a>
+<FONT color="green">489</FONT>    <a name="line.489"></a>
+<FONT color="green">490</FONT>        private final Kind kind;<a name="line.490"></a>
 <FONT color="green">491</FONT>    <a name="line.491"></a>
-<FONT color="green">492</FONT>      public Map&lt;String, String&gt; getBindings() {<a name="line.492"></a>
-<FONT color="green">493</FONT>        return this.bindings;<a name="line.493"></a>
-<FONT color="green">494</FONT>      }<a name="line.494"></a>
-<FONT color="green">495</FONT>    <a name="line.495"></a>
-<FONT color="green">496</FONT>      public void setBindings(final Map&lt;String, String&gt; bindings) {<a name="line.496"></a>
-<FONT color="green">497</FONT>        this.bindings = bindings;<a name="line.497"></a>
-<FONT color="green">498</FONT>      }<a name="line.498"></a>
-<FONT color="green">499</FONT>    <a name="line.499"></a>
-<FONT color="green">500</FONT>      public static final class Modification implements Serializable {<a name="line.500"></a>
-<FONT color="green">501</FONT>    <a name="line.501"></a>
-<FONT color="green">502</FONT>        private static final long serialVersionUID = 1L;<a name="line.502"></a>
-<FONT color="green">503</FONT>    <a name="line.503"></a>
-<FONT color="green">504</FONT>        public static enum Kind {<a name="line.504"></a>
-<FONT color="green">505</FONT>          UNMODIFIED, GENERATED, MODIFIED;<a name="line.505"></a>
-<FONT color="green">506</FONT>        }<a name="line.506"></a>
-<FONT color="green">507</FONT>    <a name="line.507"></a>
-<FONT color="green">508</FONT>        private final CtClass packageInfoCtClass;<a name="line.508"></a>
-<FONT color="green">509</FONT>    <a name="line.509"></a>
-<FONT color="green">510</FONT>        private final byte[] bytes;<a name="line.510"></a>
-<FONT color="green">511</FONT>    <a name="line.511"></a>
-<FONT color="green">512</FONT>        private final Kind kind;<a name="line.512"></a>
+<FONT color="green">492</FONT>        private Modification(final CtClass packageInfoCtClass, final Kind kind, final byte[] bytes) {<a name="line.492"></a>
+<FONT color="green">493</FONT>          super();<a name="line.493"></a>
+<FONT color="green">494</FONT>          if (packageInfoCtClass == null) {<a name="line.494"></a>
+<FONT color="green">495</FONT>            throw new IllegalArgumentException("packageInfoCtClass", new NullPointerException("packageInfoCtClass"));<a name="line.495"></a>
+<FONT color="green">496</FONT>          }<a name="line.496"></a>
+<FONT color="green">497</FONT>          if (!"package-info".equals(packageInfoCtClass.getSimpleName())) {<a name="line.497"></a>
+<FONT color="green">498</FONT>            throw new IllegalArgumentException("packageInfoCtClass must be a package-info class: " + packageInfoCtClass);<a name="line.498"></a>
+<FONT color="green">499</FONT>          }<a name="line.499"></a>
+<FONT color="green">500</FONT>          this.packageInfoCtClass = packageInfoCtClass;<a name="line.500"></a>
+<FONT color="green">501</FONT>          assert packageInfoCtClass.isFrozen();<a name="line.501"></a>
+<FONT color="green">502</FONT>          if (kind == null) {<a name="line.502"></a>
+<FONT color="green">503</FONT>            this.kind = Kind.MODIFIED;<a name="line.503"></a>
+<FONT color="green">504</FONT>          } else {<a name="line.504"></a>
+<FONT color="green">505</FONT>            this.kind = kind;<a name="line.505"></a>
+<FONT color="green">506</FONT>          }<a name="line.506"></a>
+<FONT color="green">507</FONT>          if (bytes == null) {<a name="line.507"></a>
+<FONT color="green">508</FONT>            this.bytes = new byte[0];<a name="line.508"></a>
+<FONT color="green">509</FONT>          } else {<a name="line.509"></a>
+<FONT color="green">510</FONT>            this.bytes = bytes;<a name="line.510"></a>
+<FONT color="green">511</FONT>          }<a name="line.511"></a>
+<FONT color="green">512</FONT>        }<a name="line.512"></a>
 <FONT color="green">513</FONT>    <a name="line.513"></a>
-<FONT color="green">514</FONT>        private Modification(final CtClass packageInfoCtClass, final Kind kind, final byte[] bytes) {<a name="line.514"></a>
-<FONT color="green">515</FONT>          super();<a name="line.515"></a>
-<FONT color="green">516</FONT>          if (packageInfoCtClass == null) {<a name="line.516"></a>
-<FONT color="green">517</FONT>            throw new IllegalArgumentException("packageInfoCtClass", new NullPointerException("packageInfoCtClass"));<a name="line.517"></a>
-<FONT color="green">518</FONT>          }<a name="line.518"></a>
-<FONT color="green">519</FONT>          if (!"package-info".equals(packageInfoCtClass.getSimpleName())) {<a name="line.519"></a>
-<FONT color="green">520</FONT>            throw new IllegalArgumentException("packageInfoCtClass must be a package-info class: " + packageInfoCtClass);<a name="line.520"></a>
-<FONT color="green">521</FONT>          }<a name="line.521"></a>
-<FONT color="green">522</FONT>          this.packageInfoCtClass = packageInfoCtClass;<a name="line.522"></a>
-<FONT color="green">523</FONT>          assert packageInfoCtClass.isFrozen();<a name="line.523"></a>
-<FONT color="green">524</FONT>          if (kind == null) {<a name="line.524"></a>
-<FONT color="green">525</FONT>            this.kind = Kind.MODIFIED;<a name="line.525"></a>
-<FONT color="green">526</FONT>          } else {<a name="line.526"></a>
-<FONT color="green">527</FONT>            this.kind = kind;<a name="line.527"></a>
-<FONT color="green">528</FONT>          }<a name="line.528"></a>
-<FONT color="green">529</FONT>          if (bytes == null) {<a name="line.529"></a>
-<FONT color="green">530</FONT>            this.bytes = new byte[0];<a name="line.530"></a>
-<FONT color="green">531</FONT>          } else {<a name="line.531"></a>
-<FONT color="green">532</FONT>            this.bytes = bytes;<a name="line.532"></a>
-<FONT color="green">533</FONT>          }<a name="line.533"></a>
-<FONT color="green">534</FONT>        }<a name="line.534"></a>
-<FONT color="green">535</FONT>    <a name="line.535"></a>
-<FONT color="green">536</FONT>        public final String getPackageName() {<a name="line.536"></a>
-<FONT color="green">537</FONT>          return this.packageInfoCtClass.getPackageName();<a name="line.537"></a>
-<FONT color="green">538</FONT>        }<a name="line.538"></a>
-<FONT color="green">539</FONT>    <a name="line.539"></a>
-<FONT color="green">540</FONT>        public final Kind getKind() {<a name="line.540"></a>
-<FONT color="green">541</FONT>          return this.kind;<a name="line.541"></a>
-<FONT color="green">542</FONT>        }<a name="line.542"></a>
-<FONT color="green">543</FONT>    <a name="line.543"></a>
-<FONT color="green">544</FONT>        public final byte[] toByteArray() {<a name="line.544"></a>
-<FONT color="green">545</FONT>          return this.bytes;<a name="line.545"></a>
-<FONT color="green">546</FONT>        }<a name="line.546"></a>
-<FONT color="green">547</FONT>    <a name="line.547"></a>
-<FONT color="green">548</FONT>      }<a name="line.548"></a>
-<FONT color="green">549</FONT>    <a name="line.549"></a>
-<FONT color="green">550</FONT>    }<a name="line.550"></a>
+<FONT color="green">514</FONT>        public final String getPackageName() {<a name="line.514"></a>
+<FONT color="green">515</FONT>          return this.packageInfoCtClass.getPackageName();<a name="line.515"></a>
+<FONT color="green">516</FONT>        }<a name="line.516"></a>
+<FONT color="green">517</FONT>    <a name="line.517"></a>
+<FONT color="green">518</FONT>        public final Kind getKind() {<a name="line.518"></a>
+<FONT color="green">519</FONT>          return this.kind;<a name="line.519"></a>
+<FONT color="green">520</FONT>        }<a name="line.520"></a>
+<FONT color="green">521</FONT>    <a name="line.521"></a>
+<FONT color="green">522</FONT>        public final byte[] toByteArray() {<a name="line.522"></a>
+<FONT color="green">523</FONT>          return this.bytes;<a name="line.523"></a>
+<FONT color="green">524</FONT>        }<a name="line.524"></a>
+<FONT color="green">525</FONT>    <a name="line.525"></a>
+<FONT color="green">526</FONT>      }<a name="line.526"></a>
+<FONT color="green">527</FONT>    <a name="line.527"></a>
+<FONT color="green">528</FONT>    }<a name="line.528"></a>
 
 
 
