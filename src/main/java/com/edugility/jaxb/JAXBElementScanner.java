@@ -50,11 +50,9 @@ import javassist.bytecode.ClassFile;
 import org.scannotation.AnnotationDB;
 
 /**
- * Scans classes looking for JAXB-bindable types that implement interfaces.
- *
- * <p>This class helps with fooling JAXB into handling interfaces.
- * This class can give you a {@link Map} of interface names and the
- * JAXB-bindable types that implement those interfaces.</p>
+ * A class that efficiently scans class bytecode looking for classes
+ * annotated with JAXB annotations that optionally implement a given
+ * interface.
  *
  * @see XmlAdapterBytecodeGenerator
  *
@@ -83,9 +81,11 @@ public class JAXBElementScanner implements Serializable {
   }
 
   /**
-   * Returns a {@link Map} of implementation class names that are
-   * annotated with JAXB annotations indexed by the interface names
-   * they implement.
+   * Returns a {@link Map} of JAXB-annotated implementation class
+   * names indexed by the interface names they implement.
+   *
+   * <p>The default implementation of this method does no classloading
+   * but scans the bytecode directly.</p>
    */
   public Map<String, String> scan() throws IOException {
     final SortedMap<String, String> bindings = new TreeMap<String, String>();
@@ -96,112 +96,46 @@ public class JAXBElementScanner implements Serializable {
       return bindings;
     }
 
-    final Set<String> ignoredPackages = this.getIgnoredPackages();
-
-    final AnnotationDB db = new AnnotationDB() {
+    final AnnotationDB db = new ClassFileTrackingAnnotationDB() {
         
         private static final long serialVersionUID = 1L;
 
-        private ClassFile cf;
-
-        /**
-         * Overrides the superclass' implementation to track the
-         * {@link ClassFile} being scanned.
-         */
         @Override
-        protected final void scanClass(final ClassFile cf) {
-          // Overrides this method to keep track of the ClassFile being scanned.
-          if (cf == null || !cf.isInterface()) {
-            this.cf = cf;
-          } else {
-            this.cf = null;
-          }
-          super.scanClass(cf);
-          this.cf = null;
-        }
-
-        /**
-         * Overrides the superclass' implementation to track the
-         * {@link ClassFile} being scanned.
-         */
-        @Override
-        protected final void scanMethods(final ClassFile cf) {
-          // Overrides this method to keep track of the ClassFile being scanned.
-          if (cf == null || !cf.isInterface()) {
-            this.cf = cf;
-          } else {
-            this.cf = null;
-          }
-          super.scanMethods(cf);
-          this.cf = null;
-        }
-
-        /**
-         * Overrides the superclass' implementation to track the
-         * {@link ClassFile} being scanned.
-         */
-        @Override
-        protected final void scanFields(final ClassFile cf) {
-          // Overrides this method to keep track of the ClassFile being scanned.
-          if (cf == null || !cf.isInterface()) {
-            this.cf = cf;
-          } else {
-            this.cf = null;
-          }
-          super.scanFields(cf);
-          this.cf = null;
-        }
-
-        /**
-         * Overrides the superclass' implementation to track the
-         * {@link ClassFile} being scanned.
-         */
-        @Override
-        protected final void populate(final Annotation[] annotations, final String className) {
-          // All scannotation activity passes through here.
-          if (annotations != null && className != null && annotations.length > 0 && this.cf != null) {
-            assert className.equals(this.cf.getName());
-            assert !this.cf.isInterface();
-
+        protected final void populate(final Annotation[] annotations, final ClassFile cf) {
+          if (annotations != null && annotations.length > 0 && cf != null && !cf.isInterface()) {
             final BindingFilter bindingFilter = getBindingFilter();            
-
             for (final Annotation a : annotations) {
-              assert a != null;
-              final String typeName = a.getTypeName();
-              assert typeName != null;
-              if (typeName.startsWith("javax.xml.bind.annotation.")) {
-                // OK, we have a class with JAXB annotations on it.
-                // Get its interfaces efficiently.
-                boolean atLeastOneInterfaceProcessed = false;
-                final String[] interfaces = this.cf.getInterfaces();
-                if (interfaces != null && interfaces.length > 0) {
-                  for (final String interfaceName : interfaces) {
-                    assert interfaceName != null;
-                    final String implementationClassName = this.cf.getName();
-                    if (bindingFilter == null || bindingFilter.accept(interfaceName, implementationClassName)) {
-                      atLeastOneInterfaceProcessed = true;
-                      // TODO:
-                      //
-                      // Consider the case where XyzImpl implements
-                      // Xyz and AbcImpl also implements Xyz.
-                      //
-                      // Only Xyz = AbcImpl will be stored.  I THINK
-                      // this is OK but we should check.  Or report.
-                      // Or warn.  Or something.
-                      bindings.put(interfaceName, implementationClassName);
+              if (a != null) {
+                final String typeName = a.getTypeName();
+                assert typeName != null;
+                if (typeName.startsWith("javax.xml.bind.annotation.")) {
+                  // OK, we have a class with JAXB annotations on it.
+                  // Get its interfaces efficiently.
+                  boolean atLeastOneInterfaceProcessed = false;
+                  final String[] interfaces = cf.getInterfaces();
+                  if (interfaces != null && interfaces.length > 0) {
+                    for (final String interfaceName : interfaces) {
+                      assert interfaceName != null;
+                      final String implementationClassName = cf.getName();
+                      if (bindingFilter == null || bindingFilter.accept(interfaceName, implementationClassName)) {
+                        atLeastOneInterfaceProcessed = true;
+                        if (bindings.containsKey(interfaceName)) {
+                          // TODO: warn
+                        }
+                        bindings.put(interfaceName, implementationClassName);
+                      }
                     }
                   }
-                }
-                if (atLeastOneInterfaceProcessed) {
-                  break; // out of the annotation processing loop
+                  if (atLeastOneInterfaceProcessed) {
+                    break; // out of the annotation processing loop
+                  }
                 }
               }
             }
-
           }
         }
       };
-    db.setScanParameterAnnotations(false);
+    final Set<String> ignoredPackages = this.getIgnoredPackages();
     if (ignoredPackages != null) {
       db.setIgnoredPackages(ignoredPackages.toArray(new String[ignoredPackages.size()]));
     }
@@ -347,6 +281,82 @@ public class JAXBElementScanner implements Serializable {
       }
       return result;
     }
+
+  }
+
+
+  private static abstract class ClassFileTrackingAnnotationDB extends AnnotationDB {
+        
+    private ClassFile cf;
+    
+    private ClassFileTrackingAnnotationDB() {
+      super();
+      this.setScanParameterAnnotations(false);
+    }
+
+    /**
+     * Overrides the superclass' implementation to track the
+     * {@link ClassFile} being scanned.
+     */
+    @Override
+    protected final void scanClass(final ClassFile cf) {
+      // Overrides this method to keep track of the ClassFile being scanned.
+      if (cf == null || !cf.isInterface()) {
+        this.cf = cf;
+      } else {
+        this.cf = null;
+      }
+      super.scanClass(cf);
+      this.cf = null;
+    }
+    
+    /**
+     * Overrides the superclass' implementation to track the
+     * {@link ClassFile} being scanned.
+     */
+    @Override
+    protected final void scanMethods(final ClassFile cf) {
+      // Overrides this method to keep track of the ClassFile being scanned.
+      if (cf == null || !cf.isInterface()) {
+        this.cf = cf;
+      } else {
+        this.cf = null;
+      }
+      super.scanMethods(cf);
+      this.cf = null;
+    }
+    
+    /**
+     * Overrides the superclass' implementation to track the
+     * {@link ClassFile} being scanned.
+     */
+    @Override
+    protected final void scanFields(final ClassFile cf) {
+      // Overrides this method to keep track of the ClassFile being scanned.
+      if (cf == null || !cf.isInterface()) {
+        this.cf = cf;
+      } else {
+        this.cf = null;
+      }
+      super.scanFields(cf);
+      this.cf = null;
+    }
+    
+    /**
+     * Overrides the superclass' implementation to track the
+     * {@link ClassFile} being scanned.
+     */
+    @Override
+    protected final void populate(final Annotation[] annotations, final String className) {
+      // All scannotation activity passes through here.
+      if (annotations != null && className != null && annotations.length > 0 && this.cf != null) {
+        assert className.equals(this.cf.getName());
+        assert !this.cf.isInterface();
+        this.populate(annotations, this.cf);
+      }
+    }
+
+    protected abstract void populate(final Annotation[] annotations, final ClassFile cf);
 
   }
 
