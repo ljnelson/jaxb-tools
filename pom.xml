@@ -122,6 +122,16 @@
             <message>Building site for ${project.artifactId} ${project.version}</message>
             <server>github</server>
           </configuration>
+          <!-- 
+          https://github.com/github/maven-plugins/pull/37
+          -->
+          <dependencies>
+            <dependency>
+              <groupId>org.eclipse.mylyn.github</groupId>
+              <artifactId>org.eclipse.egit.github.core</artifactId>
+              <version>2.0.3</version>
+            </dependency>                        
+          </dependencies>    
         </plugin>
 
         <plugin>
@@ -322,7 +332,7 @@
     <mavenSurefirePluginVersion>2.14.1</mavenSurefirePluginVersion>
     <mavenVersion>3.0.4</mavenVersion>
     <scannotationVersion>1.0.2</scannotationVersion>
-    <siteMavenPluginVersion>0.8</siteMavenPluginVersion>
+    <siteMavenPluginVersion>0.7</siteMavenPluginVersion>
     <versionsMavenPluginVersion>2.0</versionsMavenPluginVersion>
 
     <!-- maven-compiler-plugin properties -->
