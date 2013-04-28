@@ -229,17 +229,17 @@ public class PackageInfoModifier {
   }
 
   /**
-   * Given a Javassist {@link Annotation} representing the {@code
-   * @}{@link XmlJavaTypeAdapters} annotation, does whatever is
-   * necessary to make such an {@link Annotation} contain an array of
-   * {@link AnnotationMemberValue} objects, each of which represents
-   * an {@link XmlJavaTypeAdapter} annotation that has been specified
-   * in accordance with the rules represented by the return value of
-   * the {@link #getBindings()} method.
+   * Given a Javassist {@link Annotation} representing the {@link
+   * XmlJavaTypeAdapters} annotation, does whatever is necessary to
+   * make such an {@link Annotation} contain an array of {@link
+   * AnnotationMemberValue} objects, each of which represents an
+   * {@link XmlJavaTypeAdapter} annotation that has been specified in
+   * accordance with the rules represented by the return value of the
+   * {@link #getBindings()} method.
    *
    * @param adaptersAnnotation a non-{@code null} Javassist {@link
-   * Annotation} representation of the {@code @}{@link
-   * XmlJavaTypeAdapters} annotation
+   * Annotation} representation of the {@link XmlJavaTypeAdapters}
+   * annotation
    *
    * @param constantPool a {@link ConstPool} instance for use in
    * constructing new {@link Annotation} instances; Javassist
@@ -431,11 +431,10 @@ public class PackageInfoModifier {
    * <p>This method never returns {@code null}.</p>
    *
    * @param adaptersHolder the {@link ArrayMemberValue} that resulted
-   * from calling {@link Annotation#getArrayMemberValue()
-   * Annotation#getArrayMemberValue("value")} on an {@link Annotation}
-   * that is Javassist's representation of the {@link
-   * XmlJavaTypeAdapters} annotation.  This parameter may be {@code
-   * null}.
+   * from calling {@link Annotation#getMemberValue(String)
+   * Annotation#getMemberValue("value")} on an {@link Annotation} that
+   * is Javassist's representation of the {@link XmlJavaTypeAdapters}
+   * annotation.  This parameter may be {@code null}.
    *
    * @return a {@link Map} of {@link Annotation} objects representing
    * {@link XmlJavaTypeAdapter} annotations indexed by the {@linkplain

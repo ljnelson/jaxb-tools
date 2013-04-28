@@ -45,7 +45,8 @@ import javassist.bytecode.SignatureAttribute;
 /**
  * A generator of bytecode for {@link UniversalXmlAdapter} subclasses.
  *
- * @author <a href="http://about.me/lairdnelson">Laird Nelson</a>
+ * @author <a href="http://about.me/lairdnelson"
+ * target="_parent">Laird Nelson</a>
  *
  * @see #generate(String, String, String)
  *
@@ -61,7 +62,7 @@ public class XmlAdapterBytecodeGenerator {
   private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
   /**
-   * A {@link Formatter} template used to name a {@link
+   * A {@linkplain Formatter format string} used to name a {@link
    * UniversalXmlAdapter} subclass.  This field may be {@code null}.
    *
    * @see #getAdapterClassNameTemplate()
@@ -83,13 +84,13 @@ public class XmlAdapterBytecodeGenerator {
   }
 
   /**
-   * Returns a {@link Formatter} template for use by the {@link
-   * #getAdapterClassName(String, String, String)} method.
+   * Returns a {@linkplain Formatter format string} for use by the
+   * {@link #getAdapterClassName(String, String, String)} method.
    *
    * <p>This method may return {@code null}.</p>
    *
-   * @return a {@link String} representing a {@link Formatter}
-   * template, or {@code null}
+   * @return a {@link String} representing a {@linkplain Formatter
+   * format string} or {@code null}
    *
    * @see #setAdapterClassNameTemplate(String)
    *
@@ -100,11 +101,11 @@ public class XmlAdapterBytecodeGenerator {
   }
 
   /**
-   * Sets the {@link Formatter} template for use by the {@link
-   * #getAdapterClassNameTemplate(String, String, String)} method.
+   * Sets the {@linkplain Formatter format string} for use by the
+   * {@link #getAdapterClassNameTemplate()} method.
    *
-   * @param adapterClassNameTemplate the {@link Formatter} template;
-   * must not be {@code null}
+   * @param adapterClassNameTemplate the {@linkplain Formatter format
+   * string}; must not be {@code null}
    *
    * @exception IllegalArgumentException if {@code
    * adapterClassNameTemplate} is {@code null}

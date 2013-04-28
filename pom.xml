@@ -291,7 +291,7 @@
     <links>http://download.oracle.com/javaee/6/api/,http://scannotation.sourceforge.net/apidocs/,http://www.csg.is.titech.ac.jp/~chiba/javassist/html/</links>
     <show>private</show>
     <sourcetab>2</sourcetab>
-    <stylesheet>maven</stylesheet>
+    <stylesheetfile>styles.css</stylesheetfile>
 
     <!-- maven-resource-plugin properties -->
     <maven.resource.escapeString>\</maven.resource.escapeString>
