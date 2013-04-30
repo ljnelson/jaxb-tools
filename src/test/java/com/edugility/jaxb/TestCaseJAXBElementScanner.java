@@ -32,6 +32,7 @@ import java.io.File;
 import java.net.URI;
 import java.net.URL;
 
+import java.util.Collections;
 import java.util.Map;
 
 import org.junit.Test;
@@ -47,7 +48,7 @@ public class TestCaseJAXBElementScanner {
     final File testOutputDirectory = this.getTestOutputDirectory();
     assertNotNull(testOutputDirectory);
     assertTrue(testOutputDirectory.isDirectory());
-    scanner.addURI(testOutputDirectory.toURI());
+    scanner.setURIs(Collections.singleton(testOutputDirectory.toURI()));
     final Map<String, String> map = scanner.scan();
     assertNotNull(map);
     assertFalse(map.isEmpty());

@@ -34,6 +34,10 @@ import java.net.URI;
 import java.net.URL;
 
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EventListener;
+import java.util.EventObject;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -54,6 +58,9 @@ import org.scannotation.AnnotationDB;
  * A class that efficiently scans class bytecode looking for classes
  * annotated with JAXB annotations that optionally implement a given
  * interface.
+ *
+ * @author <a href="http://about.me/lairdnelson"
+ * target="_parent">Laird Nelson</a>
  *
  * @see #scan()
  *
@@ -84,14 +91,16 @@ public class JAXBElementScanner implements Serializable {
   }
 
   /**
-   * Returns a {@link Map} of JAXB-annotated implementation class
-   * names indexed by the interface names they implement.
+   * Returns a {@link Map} of efficiently discovered JAXB-annotated
+   * implementation class names indexed by the interface names they
+   * implement.
    *
    * <p>The default implementation of this method does no classloading
    * but scans the bytecode directly.</p>
    *
-   * @return a non-{@code null} {@link Map} of names of JAXB-annotated
-   * classes indexed by the names of interfaces they implement
+   * @return a non-{@code null} {@link Map} of names of discovered
+   * JAXB-annotated classes indexed by the names of interfaces they
+   * implement
    *
    * @exception IOException if an error occurs during the processing
    * of class files
@@ -101,7 +110,7 @@ public class JAXBElementScanner implements Serializable {
     final Set<URI> uris = this.getURIs();
     if (uris != null && !uris.isEmpty()) {
 
-      final AnnotationDB db = new ClassFileTrackingAnnotationDB(this.getIgnoredPackages()) {        
+      final ClassFileTrackingAnnotationDB db = new ClassFileTrackingAnnotationDB(this.getIgnoredPackages()) {        
           private static final long serialVersionUID = 1L;
           @Override
           protected final void populate(final Annotation[] annotations, final ClassFile cf) {
@@ -139,15 +148,9 @@ public class JAXBElementScanner implements Serializable {
           }
         };
 
-      final URL[] urls = new URL[uris.size()];
-      int i = 0;
-      for (final URI uri : uris) {
-        urls[i++] = uri == null ? null : uri.toURL();
-      }
-
       try {
-        // Scans the URLs and places the results in the bindings map
-        db.scanArchives(urls);
+        // Scans the URIs and places the results in the bindings map
+        db.scanArchives(uris);
       } catch (final IllegalStateException unwrapMe) {
         final Throwable cause = unwrapMe.getCause();
         if (cause instanceof IOException) {
@@ -174,15 +177,6 @@ public class JAXBElementScanner implements Serializable {
 
   public void setURIs(final Set<URI> uris) {
     this.uris = uris;
-  }
-
-  public void addURI(final URI uri) {
-    if (uri != null) {
-      if (this.uris == null) {
-        this.uris = new LinkedHashSet<URI>();
-      }
-      this.uris.add(uri);
-    }
   }
 
 
@@ -282,85 +276,6 @@ public class JAXBElementScanner implements Serializable {
       }
       return result;
     }
-
-  }
-
-
-  private static abstract class ClassFileTrackingAnnotationDB extends AnnotationDB {
-        
-    private ClassFile cf;
-    
-    private ClassFileTrackingAnnotationDB(Set<String> ignoredPackages) {
-      super();      
-      this.setScanParameterAnnotations(false);
-      if (ignoredPackages != null && !ignoredPackages.isEmpty()) {
-        this.setIgnoredPackages(ignoredPackages.toArray(new String[ignoredPackages.size()]));
-      }
-    }
-
-    /**
-     * Overrides the superclass' implementation to track the
-     * {@link ClassFile} being scanned.
-     */
-    @Override
-    protected final void scanClass(final ClassFile cf) {
-      // Overrides this method to keep track of the ClassFile being scanned.
-      if (cf == null || !cf.isInterface()) {
-        this.cf = cf;
-      } else {
-        this.cf = null;
-      }
-      super.scanClass(cf);
-      this.cf = null;
-    }
-    
-    /**
-     * Overrides the superclass' implementation to track the
-     * {@link ClassFile} being scanned.
-     */
-    @Override
-    protected final void scanMethods(final ClassFile cf) {
-      // Overrides this method to keep track of the ClassFile being scanned.
-      if (cf == null || !cf.isInterface()) {
-        this.cf = cf;
-      } else {
-        this.cf = null;
-      }
-      super.scanMethods(cf);
-      this.cf = null;
-    }
-    
-    /**
-     * Overrides the superclass' implementation to track the
-     * {@link ClassFile} being scanned.
-     */
-    @Override
-    protected final void scanFields(final ClassFile cf) {
-      // Overrides this method to keep track of the ClassFile being scanned.
-      if (cf == null || !cf.isInterface()) {
-        this.cf = cf;
-      } else {
-        this.cf = null;
-      }
-      super.scanFields(cf);
-      this.cf = null;
-    }
-    
-    /**
-     * Overrides the superclass' implementation to track the
-     * {@link ClassFile} being scanned.
-     */
-    @Override
-    protected final void populate(final Annotation[] annotations, final String className) {
-      // All scannotation activity passes through here.
-      if (annotations != null && className != null && annotations.length > 0 && this.cf != null) {
-        assert className.equals(this.cf.getName());
-        assert !this.cf.isInterface();
-        this.populate(annotations, this.cf);
-      }
-    }
-
-    protected abstract void populate(final Annotation[] annotations, final ClassFile cf);
 
   }
 
