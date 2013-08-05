@@ -34,7 +34,20 @@ import java.util.Locale;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
+/**
+ * An {@link XmlAdapter} that can {@linkplain #marshal(Date) marshal}
+ * a {@link Date} into a {@link Locale}-sensitive {@link String}.
+ *
+ * @author <a href="http://about.me/lairdnelson"
+ * target="_parent">Laird Nelson</a>
+ */
 public class DateAdapter extends XmlAdapter<String, Date> {
+
+
+  /*
+   * Instance fields.
+   */
+
 
   /**
    * The {@link DateFormat} to use to format an arbitrary {@link Date}
@@ -42,23 +55,46 @@ public class DateAdapter extends XmlAdapter<String, Date> {
    *
    * <p>This field may be {@code null}.</p>
    */
-  private DateFormat dateFormat;
+  private DateFormat marshalingDateFormat;
+
+  /**
+   * The {@link DateFormat} to use to format an arbitrary {@link
+   * String} coming from a client into a {@link Date} suitable for
+   * consumption by the {@link Locale}-independent server.
+   *
+   * <p>This field may be {@code null}, in which case the return value
+   * from {@link DateFormat#getInstance(Locale)
+   * DateFormat#getInstance(Locale.getDefault())} will be used
+   * instead.</p>
+   */
+  private DateFormat unmarshalingDateFormat;
 
   private boolean synchronize;
+
+  /*
+   * Constructors.
+   */
+
 
   public DateAdapter() {
     this(null, false);
   }
 
-  public DateAdapter(final DateFormat dateFormat) {
-    this(dateFormat, false);
+  public DateAdapter(final DateFormat marshalingDateFormat) {
+    this(marshalingDateFormat, false);
   }
 
-  public DateAdapter(final DateFormat dateFormat, final boolean synchronize) {
+  public DateAdapter(final DateFormat marshalingDateFormat, final boolean synchronize) {
     super();
     this.setSynchronize(synchronize);
-    this.setDateFormat(dateFormat);
+    this.setMarshalingDateFormat(marshalingDateFormat);
   }
+
+
+  /*
+   * Instance methods.
+   */
+
 
   public boolean getSynchronize() {
     return this.synchronize;
@@ -68,45 +104,71 @@ public class DateAdapter extends XmlAdapter<String, Date> {
     this.synchronize = synchronize;
   }
 
-  public DateFormat getDateFormat() {
-    return this.dateFormat;
+  public DateFormat getMarshalingDateFormat() {
+    return this.marshalingDateFormat;
   }
 
-  public void setDateFormat(final DateFormat dateFormat) {
-    this.dateFormat = dateFormat;
+  public void setMarshalingDateFormat(final DateFormat marshalingDateFormat) {
+    this.marshalingDateFormat = marshalingDateFormat;
+  }
+
+  public DateFormat getUnmarshalingDateFormat() {
+    return this.unmarshalingDateFormat;
+  }
+
+  public void setUnmarshalingDateFormat(final DateFormat unmarshalingDateFormat) {
+    this.unmarshalingDateFormat = unmarshalingDateFormat;
   }
 
   @Override
-  public String marshal(final Date date) throws Exception {
-    String localizedDate = null;
-    if (date != null) {
-      final DateFormat dateFormat = this.getDateFormat();
-      if (dateFormat != null) {
-        if (this.synchronize) {
-          synchronized (dateFormat) {
-            localizedDate = dateFormat.format(date);
-          }
-        } else {
-          localizedDate = dateFormat.format(date);
-        }
+  public String marshal(Date date) throws Exception {
+    final String localizedDate;
+    if (date == null) {
+      date = new Date(0L);
+    }
+    assert date != null;
+    DateFormat marshalingDateFormat = this.getMarshalingDateFormat();
+    if (marshalingDateFormat == null) {
+      marshalingDateFormat = DateFormat.getInstance();
+    }
+    if (marshalingDateFormat == null) {
+      localizedDate = date.toString();
+    } else if (this.synchronize) {
+      synchronized (marshalingDateFormat) {
+        localizedDate = marshalingDateFormat.format(date);
       }
+    } else {
+      localizedDate = marshalingDateFormat.format(date);
     }
     return localizedDate;
   }
 
   @Override
-  public Date unmarshal(final String localizedDate) throws Exception {
-    Date date = null;
-    if (localizedDate != null) {
-      final DateFormat dateFormat = this.getDateFormat();
-      if (dateFormat != null) {
-        if (this.synchronize) {
-          synchronized (dateFormat) {
-            date = dateFormat.parse(localizedDate);
-          }
+  public Date unmarshal(String localizedDate) throws Exception {
+    final Date date;
+    if (localizedDate == null) {
+      date = new Date(0L);
+    } else {
+      localizedDate = localizedDate.trim();
+      DateFormat unmarshalingDateFormat = this.getUnmarshalingDateFormat();
+      if (unmarshalingDateFormat == null) {
+        unmarshalingDateFormat = DateFormat.getInstance();
+      }
+      if (unmarshalingDateFormat == null) {
+        final DateFormat dateFormat = DateFormat.getInstance();
+        if (dateFormat == null) {
+          @SuppressWarnings("deprecation")
+          final Date d = new Date(Date.parse(localizedDate));
+          date = d;
         } else {
           date = dateFormat.parse(localizedDate);
         }
+      } else if (this.synchronize) {
+        synchronized (unmarshalingDateFormat) {
+          date = unmarshalingDateFormat.parse(localizedDate);
+        }
+      } else {
+        date = unmarshalingDateFormat.parse(localizedDate);
       }
     }
     return date;
